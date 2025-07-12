@@ -41,6 +41,29 @@ def transcribe_audio():
     )
     return response.json()
 
+@app.route('/translate', methods=['POST'])
+def translate_text():
+    data = request.get_json()
+    hindi_text = data.get("text")
+    target_language = data.get("target_language", "en")  # default to English
+
+    import openai
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+    prompt = f"Translate the following from Hindi to {target_language}:\n{hindi_text}"
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful translator."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    translated = response['choices'][0]['message']['content']
+    return {"translated_text": translated}
+
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 8080))
