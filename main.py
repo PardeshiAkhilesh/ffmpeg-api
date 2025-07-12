@@ -2,6 +2,7 @@ from flask import Flask, request, send_file
 import subprocess
 import requests
 import os
+from gtts import gTTS
 
 app = Flask(__name__)
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -63,6 +64,16 @@ def translate_text():
     translated = response['choices'][0]['message']['content']
     return {"translated_text": translated}
 
+@app.route('/gtts', methods=['POST'])
+def gtts_tts():
+    data = request.get_json()
+    text = data.get("text")
+    lang = data.get("lang", "en")
+
+    tts = gTTS(text=text, lang=lang)
+    tts.save("gtts_output.mp3")
+
+    return send_file("gtts_output.mp3", as_attachment=True)
 
 if __name__ == '__main__':
     import os
