@@ -75,6 +75,24 @@ def gtts_tts():
 
     return send_file("gtts_output.mp3", as_attachment=True)
 
+@app.route('/merge-audio', methods=['POST'])
+def merge_audio():
+    video = request.files['video']
+    audio = request.files['audio']
+
+    video.save("video.mp4")
+    audio.save("dubbed.mp3")
+
+    # Merge dubbed audio with original video
+    subprocess.run([
+        'ffmpeg', '-i', 'video.mp4', '-i', 'dubbed.mp3',
+        '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0',
+        '-shortest', 'output.mp4'
+    ])
+
+    return send_file("output.mp4", as_attachment=True)
+
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 8080))
